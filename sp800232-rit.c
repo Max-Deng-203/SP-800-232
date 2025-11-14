@@ -178,18 +178,20 @@ static ASCON_INLINE void ascon_aead128_update(ascon_aead128_ctx* ctx, unsigned c
     ctx->state[4] = s4;
 }
 
-void ascon_aead128_encrypt_update(ascon_aead128_ctx* ctx, unsigned char* ct, const unsigned char* pt, size_t len)
+size_t ascon_aead128_encrypt_update(ascon_aead128_ctx* ctx, unsigned char* ct, const unsigned char* pt, size_t len)
 {
     ascon_aead128_update(ctx, ct, pt, len);
+    return len;
 }
 
-void ascon_aead128_decrypt_update(ascon_aead128_ctx* ctx, unsigned char* pt, const unsigned char* ct, size_t len)
+size_t ascon_aead128_decrypt_update(ascon_aead128_ctx* ctx, unsigned char* pt, const unsigned char* ct, size_t len)
 {
     ctx->flags |= ASCONFLG_DEC;
     ascon_aead128_update(ctx, pt, ct, len);
+    return len;
 }
 
-void ascon_aead128_init(ascon_aead128_ctx* ctx, const unsigned char* k, const unsigned char* n)
+size_t ascon_aead128_init(ascon_aead128_ctx* ctx, const unsigned char* k, const unsigned char* n)
 {
     uint64_t s0, s1, s2, s3, s4, k0, k1;
 
@@ -210,11 +212,13 @@ void ascon_aead128_init(ascon_aead128_ctx* ctx, const unsigned char* k, const un
     ctx->state[4] = s4;
     ctx->offset = 0;
     ctx->flags = ASCONFLG_DOMAINSEP;
+    return 0;
 }
 
-void ascon_aead128_aad_update(ascon_aead128_ctx* ctx, const unsigned char* in, size_t len)
+size_t ascon_aead128_aad_update(ascon_aead128_ctx* ctx, const unsigned char* in, size_t len)
 {
     uint64_t flags;
+    size_t orig_len = len;
 
     flags = ctx->flags;
     ctx->flags = 0;
@@ -225,9 +229,10 @@ void ascon_aead128_aad_update(ascon_aead128_ctx* ctx, const unsigned char* in, s
         ascon_aead128_update(ctx, NULL, &ib, 1);
     }
     ctx->flags = flags;
+    return orig_len;
 }
 
-void ascon_aead128_encrypt_final(ascon_aead128_ctx* ctx, unsigned char* tag)
+size_t ascon_aead128_encrypt_final(ascon_aead128_ctx* ctx, unsigned char* tag)
 {
     uint64_t s0, s1, s2, s3, s4, k0, k1;
     unsigned char pad = 0x01;
@@ -248,4 +253,5 @@ void ascon_aead128_encrypt_final(ascon_aead128_ctx* ctx, unsigned char* tag)
     s4 ^= k1;
     memcpy(tag, &s3, 8);
     memcpy(tag + 8, &s4, 8);
+    return 16;
 }
