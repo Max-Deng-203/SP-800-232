@@ -84,6 +84,24 @@
 #define ASCONFLG_DEC 0x0000000000000002ULL /* in decrypt mode? */
 #define ASCONFLG_DOMAINSEP 0x8000000000000000ULL /* ready to absorb non-AAD? */
 
+/* semi-portable inline declaration */
+#ifdef OPENSSL_BUILDING_OPENSSL
+#define ASCON_INLINE ossl_inline /* use the openssl one if we can */
+#elif defined(__OPTIMIZE__)
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#define ASCON_INLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER) || defined(__ICC)
+#define ASCON_INLINE __attribute__((always_inline)) inline
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#define ASCON_INLINE inline /* C99? */
+#else
+#define ASCON_INLINE
+#endif
+#else
+#define ASCON_INLINE
+#endif
+
+/* omit test harness if this is openssl-internal */
 #ifndef OPENSSL_BUILDING_OPENSSL
 #include <stdio.h>
 
@@ -94,9 +112,10 @@ void ascon_test_state()
     ASCONP12(s0, s1, s2, s3, s4);
     printf("%lx%lx%lx%lx%lx\n", s0, s1, s2, s3, s4);
 }
+
 #endif
 
-static inline void ascon_aead128_update(ascon_aead128_ctx* ctx, unsigned char* out, const unsigned char* in, size_t len)
+static ASCON_INLINE void ascon_aead128_update(ascon_aead128_ctx* ctx, unsigned char* out, const unsigned char* in, size_t len)
 {
     uint64_t s0, s1, s2, s3, s4, flags;
     unsigned char pad = 0x01;

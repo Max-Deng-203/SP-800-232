@@ -10,9 +10,9 @@ ifneq ("$(wildcard $HOME/.local/share/sharness/sharness.sh)","")
 SHARNESS := $HOME/.local/share/sharness
 endif
 
-CFLAGS ?= -O0 -g3 -Wall
+#CFLAGS ?= -O0 -g3 -Wall
 #CFLAGS ?= -O0 -g3 -Wall -fsanitize=address,undefined -fno-sanitize-recover
-#CFLAGS ?= -O2 -Wall
+CFLAGS ?= -O2 -Wall
 
 all: sp800232-rit_driver
 
