@@ -102,7 +102,12 @@ static void test_encdec(int enc, int stream)
                 ascon_aead128_decrypt_update(&ctx, p + i, c + i, 1);
         } else
             ascon_aead128_decrypt_update(&ctx, p, c, len - 16);
-        ascon_aead128_decrypt_final(&ctx, tag);
+        
+        ascon_aead128_decrypt_final(&ctx, NULL, &is_valid, c + (len - 16), 16);
+        
+        if (!is_valid) {
+            fprintf(stderr, "Tag verification failed!\n");
+        }
 
         for (i = 0; i < len - 16; i++) {
             printf("%02X", p[i]);

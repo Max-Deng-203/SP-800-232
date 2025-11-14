@@ -255,3 +255,28 @@ size_t ascon_aead128_encrypt_final(ascon_aead128_ctx* ctx, unsigned char* tag)
     memcpy(tag + 8, &s4, 8);
     return 16;
 }
+
+size_t ascon_aead128_decrypt_final(ascon_aead128_ctx* ctx, unsigned char* out, int* is_valid, const unsigned char* expected_tag, size_t expected_tag_len)
+{
+    unsigned char computed_tag[16];
+    size_t i;
+    unsigned char diff = 0;
+
+    /* Generate the tag (same as encrypt_final) */
+    ascon_aead128_encrypt_final(ctx, computed_tag);
+
+    if (expected_tag_len != 16) {
+        *is_valid = 0;
+        return 0;
+    }
+
+    for (i = 0; i < 16; i++) {
+        diff |= computed_tag[i] ^ expected_tag[i];
+    }
+
+    *is_valid = (diff == 0) ? 1 : 0;
+
+    (void)out;
+
+    return 0;
+}
